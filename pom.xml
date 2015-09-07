@@ -4,7 +4,7 @@
 	<groupId>com.google.code.maven-replacer-plugin</groupId>
 	<artifactId>replacer</artifactId>
 	<packaging>maven-plugin</packaging>
-	<version>1.5.4-SNAPSHOT</version>
+	<version>1.5.5</version>
 	<url>http://code.google.com/p/maven-replacer-plugin</url>
 	<name>maven-replacer-plugin Maven Mojo</name>
 
@@ -169,6 +169,16 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 			<version>1.1</version>
 			<type>jar</type>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven.plugin-tools</groupId>
+			<artifactId>maven-plugin-annotations</artifactId>
+			<version>3.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-plugin-api</artifactId>
+			<version>3.0.5</version>
 		</dependency>
 	</dependencies>
 </project>
