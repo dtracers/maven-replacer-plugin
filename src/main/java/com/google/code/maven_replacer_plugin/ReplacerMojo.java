@@ -68,6 +68,17 @@ public class ReplacerMojo extends AbstractMojo {
 	private List<String> propertyFiles = new ArrayList<String>();
 
 	/**
+	 * List of files to include for sources of replacements.
+	 *
+	 * The replacements must be in the form:
+	 * TOKEN=VALUE
+	 *
+	 * @parameter
+	 */
+	@Parameter(defaultValue = "false")
+	private boolean reverseProperties;
+
+	/**
 	 * List of files to include for multiple (or single) replacement.
 	 * In Ant format (*\/directory/**.properties)
 	 * Cannot use with outputFile.
@@ -480,8 +491,13 @@ public class ReplacerMojo extends AbstractMojo {
 				getLog().info(line);
 				String[] property = line.split("=");
 				Replacement rep = new Replacement();
-				rep.setToken(property[0].trim());
-				rep.setValue(property[1].trim());
+				if (reverseProperties) {
+					rep.setToken(property[1].trim());
+					rep.setValue(property[0].trim());
+				} else {
+					rep.setToken(property[0].trim());
+					rep.setValue(property[1].trim());
+				}
 				replacements.add(rep);
 			}
 		}
