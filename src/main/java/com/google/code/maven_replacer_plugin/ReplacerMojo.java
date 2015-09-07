@@ -11,7 +11,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.PatternSyntaxException;
@@ -437,11 +436,13 @@ public class ReplacerMojo extends AbstractMojo {
 			}
 
 			List<Replacement> originalReplacements = buildReplacements();
+			if (originalReplacements == null) {
+				originalReplacements = new ArrayList<Replacement>();
+			}
 			if (propertyFiles != null && !propertyFiles.isEmpty()) {
-				if (originalReplacements == null) {
-					originalReplacements = new ArrayList<Replacement>();
-				}
-				originalReplacements.addAll(getReplacementsFromPropertyFiles());
+				List<Replacement> additionalReplacements = getReplacementsFromPropertyFiles();
+				additionalReplacements.addAll(originalReplacements);
+				originalReplacements = additionalReplacements;
 			}
 
 			List<Replacement> replacements = getDelimiterReplacements(originalReplacements);
@@ -478,7 +479,7 @@ public class ReplacerMojo extends AbstractMojo {
 	 * TOKEN=VALUE
 	 * @return
 	 */
-	private Collection<Replacement> getReplacementsFromPropertyFiles() {
+	private List<Replacement> getReplacementsFromPropertyFiles() {
 		List<Replacement> replacements = new ArrayList<Replacement>();
 		List<File> files = getFilesFromString(propertyFiles);
 		for (File file : files) {
