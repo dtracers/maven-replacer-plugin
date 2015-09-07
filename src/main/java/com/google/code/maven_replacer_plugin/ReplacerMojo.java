@@ -438,6 +438,9 @@ public class ReplacerMojo extends AbstractMojo {
 
 			List<Replacement> originalReplacements = buildReplacements();
 			if (propertyFiles != null && !propertyFiles.isEmpty()) {
+				if (originalReplacements == null) {
+					originalReplacements = new ArrayList<Replacement>();
+				}
 				originalReplacements.addAll(getReplacementsFromPropertyFiles());
 			}
 
@@ -489,6 +492,10 @@ public class ReplacerMojo extends AbstractMojo {
 			while (scanner.hasNext()) {
 				String line = scanner.nextLine();
 				getLog().info(line);
+				if (line.indexOf("=") < 0) {
+					getLog().info("Skipping line that des not contains an =");
+					continue;
+				}
 				String[] property = line.split("=");
 				Replacement rep = new Replacement();
 				if (reverseProperties) {
@@ -501,7 +508,7 @@ public class ReplacerMojo extends AbstractMojo {
 				replacements.add(rep);
 			}
 		}
-		return null;
+		return replacements;
 	}
 
 	/**
