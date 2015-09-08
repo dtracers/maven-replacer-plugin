@@ -491,7 +491,11 @@ public class ReplacerMojo extends AbstractMojo {
 		HashSet<String> existingTokens = new HashSet<String>();
 		if (!overWrite) {
 			for (Replacement rep: replacements) {
-				existingTokens.add(rep.getToken());
+				if (reverseProperties) {
+					existingTokens.add(rep.getValue());
+				} else {
+					existingTokens.add(rep.getToken());
+				}
 			}
 		}
 		for (File file : files) {
