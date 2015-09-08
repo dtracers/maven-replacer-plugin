@@ -435,21 +435,11 @@ public class ReplacerMojo extends AbstractMojo {
 				return;
 			}
 
-			List<Replacement> originalReplacements = buildReplacements();
-			if (originalReplacements == null) {
-				originalReplacements = new ArrayList<Replacement>();
-			}
-			if (propertyFiles != null && !propertyFiles.isEmpty()) {
-				List<Replacement> additionalReplacements = getReplacementsFromPropertyFiles();
-				additionalReplacements.addAll(originalReplacements);
-				originalReplacements = additionalReplacements;
-			}
-
-			List<Replacement> replacements = getDelimiterReplacements(originalReplacements);
+			List<Replacement> replacements = getDelimiterReplacements(buildReplacements());
 			addIncludesFilesAndExcludedFiles();
 
 			if (includes.isEmpty() && isBlank(file)) {
-				getLog().warn("No input file/s defined");
+				getLog().info("No input file/s defined");
 				return;
 			}
 
@@ -492,7 +482,7 @@ public class ReplacerMojo extends AbstractMojo {
 			}
 			while (scanner.hasNext()) {
 				String line = scanner.nextLine();
-				getLog().info(line);
+				getLog().debug(line);
 				if (line.indexOf("=") < 0) {
 					getLog().info("Skipping line that des not contains an =");
 					continue;
@@ -506,6 +496,7 @@ public class ReplacerMojo extends AbstractMojo {
 					rep.setToken(property[0].trim());
 					rep.setValue(property[1].trim());
 				}
+				getLog().info("Adding replacement with token [" + rep.getToken() + "] and value [" + rep.getValue() + "]");
 				replacements.add(rep);
 			}
 		}
@@ -568,6 +559,7 @@ public class ReplacerMojo extends AbstractMojo {
 
 	private void replaceContents(ReplacementProcessor processor, List<Replacement> replacements, String inputFile) throws IOException {
 		String outputFileName = outputFilenameBuilder.buildFrom(inputFile, this);
+		getLog().info("Running replacement on file " + inputFile);
 		try {
 			processor.replace(replacements, regex, getBaseDirPrefixedFilename(inputFile),
 					outputFileName, patternFlagsFactory.buildFlags(regexFlags), encoding);
@@ -583,6 +575,10 @@ public class ReplacerMojo extends AbstractMojo {
 	private List<Replacement> buildReplacements() throws IOException {
 		if (replacements != null) {
 			return replacements;
+		}
+
+		if (propertyFiles != null && !propertyFiles.isEmpty()) {
+			return getReplacementsFromPropertyFiles();
 		}
 
 		if (variableTokenValueMap != null) {
