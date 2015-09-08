@@ -11,6 +11,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.PatternSyntaxException;
@@ -61,10 +62,26 @@ public class ReplacerMojo extends AbstractMojo {
 	 * The replacements must be in the form:
 	 * TOKEN=VALUE
 	 *
+	 * If backupPropertyFiles exist then an exception is NOT thrown if propertyFiles does not resolve.
+	 *
 	 * @parameter
 	 */
 	@Parameter
 	private List<String> propertyFiles = new ArrayList<String>();
+
+	/**
+	 * List of files to include for sources of replacements.
+	 *
+	 * The replacements must be in the form:
+	 * TOKEN=VALUE
+	 *
+	 * This is used on any token that is not in the list in the normal files.
+	 * But if a token does exist it is not replaces
+	 *
+	 * @parameter
+	 */
+	@Parameter
+	private List<String> backupPropertyFiles = new ArrayList<String>();
 
 	/**
 	 * List of files to include for sources of replacements.
@@ -469,9 +486,14 @@ public class ReplacerMojo extends AbstractMojo {
 	 * TOKEN=VALUE
 	 * @return
 	 */
-	private List<Replacement> getReplacementsFromPropertyFiles() {
-		List<Replacement> replacements = new ArrayList<Replacement>();
-		List<File> files = getFilesFromString(propertyFiles);
+	private List<Replacement> getReplacementsFromPropertyFiles(List<String> fileNames, List<Replacement> replacements, boolean overWrite) {
+		List<File> files = getFilesFromString(fileNames);
+		HashSet<String> existingTokens = new HashSet<String>();
+		if (!overWrite) {
+			for (Replacement rep: replacements) {
+				existingTokens.add(rep.getToken());
+			}
+		}
 		for (File file : files) {
 			getLog().info("Properties that were loaded from file " + file.getName());
 			Scanner scanner = null;
@@ -495,6 +517,12 @@ public class ReplacerMojo extends AbstractMojo {
 				} else {
 					rep.setToken(property[0].trim());
 					rep.setValue(property[1].trim());
+				}
+
+				// Always use property zero because the values may be repeated but the tokens will not be.
+				if (!overWrite && existingTokens.contains(property[0].trim())) {
+					getLog().info("Not Overwriting Token [" + rep.getToken() + "]");
+					continue;
 				}
 				getLog().info("Adding replacement with token [" + rep.getToken() + "] and value [" + rep.getValue() + "]");
 				replacements.add(rep);
@@ -578,7 +606,11 @@ public class ReplacerMojo extends AbstractMojo {
 		}
 
 		if (propertyFiles != null && !propertyFiles.isEmpty()) {
-			return getReplacementsFromPropertyFiles();
+			List<Replacement> replacements = getReplacementsFromPropertyFiles(propertyFiles, new ArrayList<Replacement>(), true);
+			if (backupPropertyFiles != null && !backupPropertyFiles.isEmpty()) {
+				getReplacementsFromPropertyFiles(backupPropertyFiles, replacements, false);
+			}
+			return replacements;
 		}
 
 		if (variableTokenValueMap != null) {
