@@ -505,6 +505,7 @@ public class ReplacerMojo extends AbstractMojo {
 				scanner = new Scanner(file);
 			} catch (FileNotFoundException e) {
 				getLog().error("File not found", e);
+				continue;
 			}
 			while (scanner.hasNext()) {
 				String line = scanner.nextLine();
